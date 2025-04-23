@@ -1,3 +1,104 @@
+Directory structure:
+└── ksunnysingh-kvstore/
+    ├── README.md
+    ├── keyvalue.py
+    ├── main.py
+    ├── pyproject.toml
+    ├── smkv.py
+    ├── uv.lock
+    └── .python-version
+
+
+Files Content:
+
+================================================
+FILE: README.md
+================================================
+# Key-Value Store
+
+A simple key-value store implementation with basic put and get operations.
+
+## Functions
+
+### keyValPut(key: str, value: str)
+
+Initialize or load the Key Value Store, then write a single key,value pair. In other words add a "value" associated with a given "key".
+
+### keyValGet(key: str)
+
+Load the Key Value Store and return the "value" or None if missing for a given "key".
+
+Note: The database must be initialized by using keyValPut before attempting to use keyValGet. 
+
+
+================================================
+FILE: keyvalue.py
+================================================
+# keyvalue.py
+
+import os
+import sys
+
+from smkv import create, put as _put, load
+from smkv import get as _get, load
+
+DBFILE = "/tmp/smkvsys_py"
+
+def keyValPut(key: str, value: str):
+    """ 
+    Initialize or load the Key Value Store, then write a single key,value pair. In other words add a "value" associated with a given "key" 
+    """
+
+    if not os.path.exists(DBFILE + ".shard0"):
+        create(DBFILE, num_buckets=16, keys_per_bucket=32,
+               num_values=1000, value_size=32, n_shards=2)
+    else:
+        load(DBFILE, n_shards=2)
+    _put(key, value)
+
+def keyValGet(key: str):
+    """
+    Load the Key Value Store and return the "value" or None if missing fora given "key" 
+    """
+
+    if not os.path.exists(DBFILE + ".shard0"):
+        raise RuntimeError("Database not initialized. Please run keyput.py first.")
+    load(DBFILE, n_shards=2)
+    return _get(key)
+
+
+
+================================================
+FILE: main.py
+================================================
+from smkv import create, put, get
+import os
+
+dbfile = "/tmp/smkvsys_py"
+if not os.path.exists(dbfile + ".shard0"):
+    create(dbfile, num_buckets=16, keys_per_bucket=32, num_values=1000, value_size=32, n_shards=2)
+
+put("foo", "bar")
+print("GET foo =", get("foo"))
+
+
+
+================================================
+FILE: pyproject.toml
+================================================
+[project]
+name = "kv-file-store"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+
+
+================================================
+FILE: smkv.py
+================================================
 import mmap
 import os
 import struct
@@ -153,4 +254,27 @@ def load(basefile, n_shards):
     for i in range(n_shards):
         keyfile = f"{basefile}.shard{i}"
         valfile = f"{keyfile}.val"
-        SHARDS[i] = Shard(keyfile, valfile, 16, 32)  # defaults for buckets and slots 
+        SHARDS[i] = Shard(keyfile, valfile, 16, 32)  # defaults for buckets and slots
+
+
+
+================================================
+FILE: uv.lock
+================================================
+version = 1
+revision = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "kv-file-store"
+version = "0.1.0"
+source = { virtual = "." }
+
+
+
+================================================
+FILE: .python-version
+================================================
+3.12
+
+

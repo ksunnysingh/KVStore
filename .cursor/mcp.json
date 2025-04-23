@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "kvstore": {
+            "type": "python",
+            "command": "uv --directory /Users/sunny/home/projects/ai/kv-store/kv-file-store run mcp_kvstore_server.py",
+            "env": {
+                "PYTHONPATH": "/Users/sunny/home/projects/ai/kv-store/kv-file-store"
+            },
+            "debug": true
+        }
+    }
+}
